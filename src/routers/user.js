@@ -71,6 +71,7 @@ router.get('/users/:id', async (req,res) =>{
 
 router.patch('/users/:id', async (req,res) =>{// UPDATE
 
+	// ---- updates field validation ----------------
 	const updates = Object.keys(req.body) // toma el body y devuelve todas sus propiedades en un array
 	const allowedUpdates = ['name','age','email','password']
 	const validOperation = updates.every((update) => allowedUpdates.includes(update))
@@ -79,12 +80,21 @@ router.patch('/users/:id', async (req,res) =>{// UPDATE
 		return res.status(400).send('ERROR: invalid updated field' )
 	}
 	
+	// ------ field by field updating --------------------
 	try {
 		const id = req.params.id
-		const user = await User.findByIdAndUpdate(id, req.body, {
-			new: true, 
-			runValidators:true
-		 })
+		// ---- updating CON middleware function --------------
+		const user = await User.findById(id)
+		
+		updates.forEach((update) => user[update] = req.body[update])
+		await user.save()
+		
+		// ---- updating SIN middleware function --------------
+		// const user = await User.findByIdAndUpdate(id, req.body, {
+		// 	new: true, 
+		// 	runValidators:true
+		//  })
+
 		if (!user) {
 			return res.status(404).send('User not found')	
 		}
