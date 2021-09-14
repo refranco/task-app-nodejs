@@ -100,6 +100,21 @@ app.patch('/users/:id', async (req,res) =>{// UPDATE
 		res.status(400).send(e)
 	}
 })
+
+app.delete('/users/:id', async (req,res) =>{ //DELETE
+	try {
+		const user = await User.findByIdAndDelete(req.params.id)
+
+		if (!user) {
+			return res.status(404).send()
+		}
+		console.log('Deleted user: '+user.name)
+		res.send(user)
+	} catch (e) {
+		res.status(500).send()
+	}
+
+})
 // ------------ TASK CRUD -------------------------------
 app.post('/tasks', async (req,res)=>{ //CREATE
 
@@ -165,6 +180,19 @@ app.patch('/tasks/:id', async (req,res) =>{
 	}
 })
 
+app.delete('/tasks/:id', async (req,res)=>{// DELETE 
+	try {
+		const task = await Task.findByIdAndDelete(req.params.id)
+		if (!task) {
+			return res.status(404).send('Not task found')
+		}
+
+		console.log('Task deleted :'+ task.description)
+		res.send(task)
+	} catch (e) {
+		res.status(500).send()
+	}
+})
 
 app.listen(port, ()=> {
 	console.log('Server is up on port '+ port)
