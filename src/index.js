@@ -23,3 +23,12 @@ app.use(taskRouter)
 app.listen(port, ()=> {
 	console.log('Server is up on port '+ port)
 })
+
+const jwt = require('jsonwebtoken')
+
+const myFunction = async () =>{
+	const token = jwt.sign({_id:'abc123'},'this_is_a_random_message') // authentication token that will be provided to a client to perform privilege task
+	console.log(token)
+}
+
+myFunction()
