@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../middleware/authentication')
 
 // MODEL
 const User = require('../models/user');
@@ -26,11 +27,10 @@ router.post('/users',async (req,res)=> {// sending request to path /user via POS
 	// })
 })
 
-router.get('/users', async (req,res)=>{
+router.get('/users', auth, async (req,res)=>{
 
 	try {
 		const users = await User.find({})
-		console.log('users retrieved')
 		res.send(users)
 	} catch (e) {
 		res.status(500).send()
