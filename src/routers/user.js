@@ -10,10 +10,11 @@ router.post('/users',async (req,res)=> {// sending request to path /user via POS
 	//console.log(req.body) // req example with postman body set up.
 
 	const user = new User(req.body);
-
+	
 	try {
-		await user.save()
-		res.status(201).send(user)
+		const token = await user.generateAuthToken()
+		//await user.save()
+		res.status(201).send({ user,token })
 	} catch (e) {
 		res.status(400).send(e)
 	}
@@ -126,7 +127,8 @@ router.post('/users/login', async (req,res) =>{
 		// crearemos una funcion reutilizable que tomará el email, encontrará al usuario por dicho email
 		// comparará su password hasheado con el password que se tiene en la base de datos y permitirá el logueo
 		const user = await User.findbyCredentials(req.body.email,req.body.password)
-		res.send(user)
+		const token = await user.generateAuthToken()
+		res.send({user, token})
 	} catch (e) {
 		console.log(e)
 		res.status(400).send(e.message)

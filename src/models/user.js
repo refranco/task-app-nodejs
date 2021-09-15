@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 const userSchema= mongoose.Schema({
 	name:{
 		type: String,
@@ -40,14 +41,20 @@ const userSchema= mongoose.Schema({
 				throw new Error("Your password can't contains the word: 'password' ")
 			}
 		}
-	}
+	},
+	tokens: [{
+		token: {
+			type:String,
+			required: true
+		}
+	}]
 })
 
 
 // ---------------------MIDDLEWARE FUNCTIONS ------------------------------------
 
 // Hash the plain text password BEFORE saving user
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function (next) { //standard function as we need to use the binding 'this'
 	const user = this
 	if (user.isModified('password')) {
 		user.password = await bcrypt.hash(user.password, 8)
@@ -55,7 +62,7 @@ userSchema.pre('save', async function (next) {
 
 	next()
 })
-
+// ----- FUNCTIONS FOR MODEL AND ISNTANCES -----------------------
 userSchema.statics.findbyCredentials = async (email, password) => {
 	const user = await User.findOne({email})
 
@@ -70,6 +77,16 @@ userSchema.statics.findbyCredentials = async (email, password) => {
 	}
 
 	return user
+}
+
+userSchema.methods.generateAuthToken = async function() {// standard function as we need to use the binding 'this'
+	const user = this
+
+	const token = jwt.sign({'_id':user._id.toString()},'unafrasealeatoria.cualquiera')
+	user.tokens = user.tokens.concat({ token })
+	await user.save()
+
+	return token
 }
 
 const User = mongoose.model('User',userSchema)
