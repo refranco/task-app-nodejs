@@ -57,4 +57,4 @@ const myFunction = async () =>{
 	console.log(data)
 }	
 
-myFunction()
+//myFunction()

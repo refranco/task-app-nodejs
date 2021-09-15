@@ -27,10 +27,10 @@ router.post('/users',async (req,res)=> {// sending request to path /user via POS
 	// })
 })
 
-router.get('/users', auth, async (req,res)=>{
+router.get('/users', async (req,res)=>{
 
 	try {
-		const users = await User.find({})
+		const users = await User.find({})								
 		res.send(users)
 	} catch (e) {
 		res.status(500).send()
@@ -43,6 +43,10 @@ router.get('/users', auth, async (req,res)=>{
 	//  })
 })
 
+// ------ the users profile -------------------
+router.get('/users/me', auth, (req,res) =>{
+	res.send(req.user)
+})
 router.get('/users/:id', async (req,res) =>{
 
 	try {
@@ -51,7 +55,6 @@ router.get('/users/:id', async (req,res) =>{
 		if (!user) {
 			return res.status(404).send('ERROR: any user found')
 		}
-		console.log(user)
 		res.send(user)
 	} catch (e) {
 		res.status(500).send()

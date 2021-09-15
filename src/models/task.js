@@ -14,6 +14,7 @@ const taskSchema = mongoose.Schema({
 	}
 })
 
+// ------ functions middleware --------------------------------
 taskSchema.pre('save', async function(next){
 	const task = this
 	if (task.isModified('completed')){
@@ -22,7 +23,7 @@ taskSchema.pre('save', async function(next){
 	
 	next()
 } )
-
+// ------------------------------------------------------------
 
 const Task = mongoose.model('Task',taskSchema)
 
