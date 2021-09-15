@@ -120,4 +120,17 @@ router.delete('/users/:id', async (req,res) =>{ //DELETE
 
 })
 
+// -----------LOGGING IN USER -------------------
+router.post('/users/login', async (req,res) =>{
+	try {
+		// crearemos una funcion reutilizable que tomará el email, encontrará al usuario por dicho email
+		// comparará su password hasheado con el password que se tiene en la base de datos y permitirá el logueo
+		const user = await User.findbyCredentials(req.body.email,req.body.password)
+		res.send(user)
+	} catch (e) {
+		console.log(e)
+		res.status(400).send(e.message)
+
+	}
+})
 module.exports = router

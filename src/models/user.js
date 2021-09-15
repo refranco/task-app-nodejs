@@ -11,6 +11,7 @@ const userSchema= mongoose.Schema({
 	email: {
 		type:String,
 		required: true,
+		unique: true, // the user is has to be unique in all database
 		trim : true,
 		lowercase: true,
 		validate(value){
@@ -41,7 +42,11 @@ const userSchema= mongoose.Schema({
 		}
 	}
 })
-// funcion middleware para ejecutar código ANTES de guardar el usuario
+
+
+// ---------------------MIDDLEWARE FUNCTIONS ------------------------------------
+
+// Hash the plain text password BEFORE saving user
 userSchema.pre('save', async function (next) {
 	const user = this
 	if (user.isModified('password')) {
@@ -50,6 +55,22 @@ userSchema.pre('save', async function (next) {
 
 	next()
 })
+
+userSchema.statics.findbyCredentials = async (email, password) => {
+	const user = await User.findOne({email})
+
+	if (!user) {
+		throw new Error('Unable to log in, not email or password found or password incorrect')
+	}
+
+	const isMatch = await bcrypt.compare(password, user.password)
+
+	if (!isMatch) {
+		throw new Error('Unable to log in')
+	}
+
+	return user
+}
 
 const User = mongoose.model('User',userSchema)
 

@@ -21,7 +21,7 @@ router.get('/tasks',async (req,res) =>{ //READ
 
 	try {
 		const tasks = await Task.find({})
-		console.log('Tasks retrieved')
+		console.log(tasks.length+' Tasks retrieved')
 		res.send(tasks)
 	} catch (e) {
 		res.status(500).send(e)
@@ -46,6 +46,8 @@ router.get('/tasks/:id', async (req,res) =>{ //DETAIL
 
 
 router.patch('/tasks/:id', async (req,res) =>{
+
+	// ------------------- update field validation -------------------
 	const allowedUpdates = ['completed']
 	const updates = Object.keys(req.body) // toma el body y devuelve todas sus propiedades en un array
 	const validOperation = updates.every((update) => allowedUpdates.includes(update))
@@ -54,14 +56,16 @@ router.patch('/tasks/:id', async (req,res) =>{
 		return res.status(400).send('invalid update field')
 	}
 	try {
-		const task = await Task.findByIdAndUpdate(req.params.id, req.body,{
-			new: true, 
-			runValidators:true
-		})
+		// ------------------- field x field update -------------------
+		const task = await Task.findById(req.params.id)
+		
 		if (!task) {
 			return res.status(404).send('Task did not found')
 		}
-		console.log('Task: '+task.description+', updated')
+
+		updates.forEach((update) => task[update] = req.body[update])
+		await task.save()
+		
 		res.send(task)
 	} catch (e) {
 		console.log(e)
