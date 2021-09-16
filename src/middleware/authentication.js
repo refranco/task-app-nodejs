@@ -10,7 +10,7 @@ const auth = async (req, res, next)=> {
 		if (!user) {
 			throw new Error  //this will trigger the catch (e)
 		}
-
+		req.token = token // token used for authentication
 		req.user = user  // passing the user found to the request
 		next() // ensuring route handler will go on
 	} catch (e) {

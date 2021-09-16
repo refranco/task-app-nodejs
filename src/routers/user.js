@@ -8,7 +8,6 @@ const User = require('../models/user');
 
 // ------------ USER CRUD -------------------------------
 router.post('/users',async (req,res)=> {// sending request to path /user via POST method
-	//console.log(req.body) // req example with postman body set up.
 
 	const user = new User(req.body);
 	
@@ -47,7 +46,8 @@ router.get('/users', async (req,res)=>{
 router.get('/users/me', auth, (req,res) =>{
 	res.send(req.user)
 })
-router.get('/users/:id', async (req,res) =>{
+
+router.get('/users/:id', auth, async (req,res) =>{
 
 	try {
 		const _id = req.params.id
@@ -124,7 +124,7 @@ router.delete('/users/:id', async (req,res) =>{ //DELETE
 
 })
 
-// -----------LOGGING IN USER -------------------
+// -----------LOGIN/LOGOUT  USER -------------------
 router.post('/users/login', async (req,res) =>{
 	try {
 		// crearemos una funcion reutilizable que tomará el email, encontrará al usuario por dicho email
@@ -138,4 +138,32 @@ router.post('/users/login', async (req,res) =>{
 
 	}
 })
+
+router.post('/users/logout', auth, async (req,res) =>{
+	 // logout es lo mismo que eliminar el token de acceso de la lista de tokens del usuario,
+	 // firltramos la lista de tokens del usuario, eliminando el token guardado en el request
+	 // salvamos los cambios en el usuario y enivamos cualquier mensaje de confirmación si necesario
+	 
+	 try {
+		req.user.tokens = req.user.tokens.filter((token) => {
+			return token.token !== req.token} )
+		await req.user.save()
+		res.send()
+
+	 }catch (e) {
+		 res.status(500).send()
+	 }
+
+})
+
+router.post('/users/logoutAll', auth, async(req,res) =>{
+
+	try {
+		req.user.tokens = []
+		await req.user.save()
+		res.send(req.user)
+	} catch (e) {
+		res.status(500).send(e.message)
+	}
+})	 
 module.exports = router
