@@ -47,33 +47,8 @@ router.get('/users/me', auth, (req,res) =>{
 	res.send(req.user)
 })
 
-router.get('/users/:id', auth, async (req,res) =>{
 
-	try {
-		const _id = req.params.id
-		const user = await User.findById(_id)
-		if (!user) {
-			return res.status(404).send('ERROR: any user found')
-		}
-		res.send(user)
-	} catch (e) {
-		res.status(500).send()
-	}
-
-	//const _id = req.params.id //req.params recoge en un objeto todos los parámetros pasado a la url
-	
-	// User.findById(_id).then((user)=>{
-	// 	console.log(user)
-	// 	if (!user) { // cuando no se encuentra un usuario con ese ID
-	// 		return res.status(404).send('ERROR: any user found')
-	// 	}
-	// 	res.send(user)
-	// }).catch((e) =>{
-	// 	res.status(500).send('Error in the server '+ res.statusCode)
-	// })
-})
-
-router.patch('/users/:id', async (req,res) =>{// UPDATE
+router.patch('/users/me', auth, async (req,res) =>{// UPDATE
 
 	// ---- updates field validation ----------------
 	const updates = Object.keys(req.body) // toma el body y devuelve todas sus propiedades en un array
@@ -86,22 +61,13 @@ router.patch('/users/:id', async (req,res) =>{// UPDATE
 	
 	// ------ field by field updating --------------------
 	try {
-		const id = req.params.id
 		// ---- updating CON middleware function --------------
-		const user = await User.findById(id)
-		
+		const user = req.user
+
 		updates.forEach((update) => user[update] = req.body[update])
 		await user.save()
 		
-		// ---- updating SIN middleware function --------------
-		// const user = await User.findByIdAndUpdate(id, req.body, {
-		// 	new: true, 
-		// 	runValidators:true
-		//  })
-
-		if (!user) {
-			return res.status(404).send('User not found')	
-		}
+		
 		console.log('user '+user.name+' updated')
 		res.send(user)
 	} catch (e) {
@@ -109,15 +75,17 @@ router.patch('/users/:id', async (req,res) =>{// UPDATE
 	}
 })
 
-router.delete('/users/:id', async (req,res) =>{ //DELETE
+router.delete('/users/me', auth, async (req,res) =>{ //DELETE
 	try {
-		const user = await User.findByIdAndDelete(req.params.id)
+		
+		// const user = await User.findByIdAndDelete(req.user._id)
 
-		if (!user) {
-			return res.status(404).send()
-		}
-		console.log('Deleted user: '+user.name)
-		res.send(user)
+		// if (!user) {
+		// 	return res.status(404).send()
+		// }
+		await req.user.remove()
+		console.log('Deleted user: '+req.user.name)
+		res.send(req.user)
 	} catch (e) {
 		res.status(500).send()
 	}
