@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const Task = require('./task')
 
 const userSchema= mongoose.Schema({
 	name:{
@@ -69,6 +70,21 @@ userSchema.pre('save', async function (next) { //standard function as we need to
 
 	next()
 })
+
+// delete user tasks when user is removed
+userSchema.pre('remove', async function (next) {
+	// remove all the task when a user is removed
+	try {
+		const user = this
+		const tasks = await Task.deleteMany({owner: user._id})
+		console.log(tasks)
+		next()
+	} catch (e) {
+		console.log('could not find tasks')
+	}
+
+})
+
 // ----- FUNCTIONS FOR MODEL AND ISNTANCES -----------------------
 userSchema.statics.findbyCredentials = async (email, password) => {
 	const user = await User.findOne({email})
