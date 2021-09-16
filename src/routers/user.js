@@ -131,7 +131,7 @@ router.post('/users/login', async (req,res) =>{
 		// comparará su password hasheado con el password que se tiene en la base de datos y permitirá el logueo
 		const user = await User.findbyCredentials(req.body.email,req.body.password)
 		const token = await user.generateAuthToken()
-		res.send({user, token})
+		res.send({ user, token })
 	} catch (e) {
 		console.log(e)
 		res.status(400).send(e.message)
@@ -148,7 +148,7 @@ router.post('/users/logout', auth, async (req,res) =>{
 		req.user.tokens = req.user.tokens.filter((token) => {
 			return token.token !== req.token} )
 		await req.user.save()
-		res.send()
+		res.send('User '+req.user.name+' logged out')
 
 	 }catch (e) {
 		 res.status(500).send()
@@ -161,7 +161,7 @@ router.post('/users/logoutAll', auth, async(req,res) =>{
 	try {
 		req.user.tokens = []
 		await req.user.save()
-		res.send(req.user)
+		res.send('User '+req.user.name+' has been logged out from all devices')
 	} catch (e) {
 		res.status(500).send(e.message)
 	}

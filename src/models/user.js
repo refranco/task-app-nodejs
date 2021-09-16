@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+
 const userSchema= mongoose.Schema({
 	name:{
 		type: String,
@@ -78,8 +79,21 @@ userSchema.statics.findbyCredentials = async (email, password) => {
 
 	return user
 }
+/* methodo especial de usuario 'toJSON', para solo mostrar los campos especiales, este método será usado 
+cada vez que se quiera desplegar la información del usuario o la lista de usuarios */
+userSchema.methods.toJSON = function () {
+	const user = this
+	const userObject = user.toObject()
+
+	delete userObject['password']
+	delete userObject['tokens']
+
+	console.log(userObject)
+	return userObject
+}
 
 userSchema.methods.generateAuthToken = async function() {// standard function as we need to use the binding 'this'
+	// function to generate user authentication token
 	const user = this
 
 	const token = jwt.sign({'_id':user._id.toString()},'unafrasealeatoria.cualquiera')
