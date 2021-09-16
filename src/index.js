@@ -45,4 +45,4 @@ const main = async () =>{
 	console.log('after population', userTask.tasks)
 }
 
-main()
+//main()
