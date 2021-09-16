@@ -1,15 +1,20 @@
 const express = require('express');
-const router = new express.Router();
+const auth = require('../middleware/authentication')
 
+const router = new express.Router();
 // CARGANDO MODEL
 const Task = require('../models/task')
 
 // ------------ TASK CRUD -------------------------------
-router.post('/tasks', async (req,res)=>{ //CREATE
+router.post('/tasks', auth, async (req,res)=>{ //CREATE
 
+	const task = new Task({
+		...req.body,  // estamos copiando todas las propiedades que tiene req.body
+		owner: req.user._id
+	});
 	try {
-		const task = new Task(req.body);
-		await task.save()
+		
+		await task.save()	
 		res.status(201).send('New task created\n'+task)
 	} catch (e) {
 		res.status(400).send(e)

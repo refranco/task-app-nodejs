@@ -51,6 +51,12 @@ const userSchema= mongoose.Schema({
 	}]
 })
 
+// ----- virtual relationship between Users and Task ------------------
+userSchema.virtual('tasks', {
+	ref: 'Task',
+	localField: '_id',  // campo en este modelo (User) que se relaciona con el otro modelo.
+	foreignField:'owner'  // campo en el otro modelo (Task) que esta relacionado a este modelo
+})
 
 // ---------------------MIDDLEWARE FUNCTIONS ------------------------------------
 
