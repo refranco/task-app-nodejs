@@ -50,6 +50,8 @@ const userSchema= mongoose.Schema({
 			required: true
 		}
 	}]
+},{
+	timestamps: true
 })
 
 // ----- virtual relationship between Users and Task ------------------

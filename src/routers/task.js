@@ -21,13 +21,23 @@ router.post('/tasks', auth, async (req,res)=>{ //CREATE
 	}
 	
 })
-
+// GET /task?completed=true || false
 router.get('/tasks',auth, async (req,res) =>{ //READ
-
+	const match = {}
+	if (req.query.completed==='true'){
+		match.completed = true
+	} else if (req.query.completed == 'false'){
+		match.completed = false
+	}
+	console.log(match)
 	try {
-		const tasks = await Task.find({owner:req.user._id})
-		console.log(tasks.length+' Tasks retrieved')
-		res.send(tasks)
+		await req.user.populate({
+			path:'tasks',
+			match:match
+		}).execPopulate()
+
+		//console.log(req.user.tasks)
+		res.send(req.user.tasks)
 	} catch (e) {
 		res.status(500).send(e)
 	}
