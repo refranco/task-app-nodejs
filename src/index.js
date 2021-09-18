@@ -9,6 +9,33 @@ const taskRouter = require('./routers/task')
 const app = express();
 const port = process.env.PORT  || 3000
 
+const multer = require('multer')
+
+const upl = multer({
+	dest: './images', // destination folder to upload files
+	limits: { // limitar toda clase de aspecto en el dispositivo
+		fileSize: 1000000 // limit file size in bytes
+	},
+	fileFilter(req,file,cb) {
+		if (!file.originalname.match(/\.(doc|docx)$/)){
+		//if (!file.originalname.endsWith('.pdf')){
+			return cb(new Error('File must be a word document')) 
+		}
+		cb(undefined, true)
+	}
+})
+// set up and endpoint where we will upload files, then, using a function midleware in the middle of the endpoint
+// to send the file: something_to_upload
+app.post('/upload',upl.single('keyValue'), (req,res) =>{
+	try{
+		res.send('sent')
+	}catch (e){
+		res.send(e)
+	}
+})
+
+
+
 app.use(express.json()) // line to parse incoming jason request as objects 
 
 //setting up the router
@@ -18,31 +45,3 @@ app.use(taskRouter)
 app.listen(port, ()=> {
 	console.log('Server is up on port '+ port)
 })
-
-const Task = require('./models/task')
-const User = require('./models/user');
-
-const main = async () =>{
-	// ---- finding the owner info from a particular task --------------
-	
-	const task = await Task.findById('61437a0621e8b50e91e8e142')
-	//console.log(task)
-
-	// without USER/TASK relationship
-	// const user = await User.findById(task.owner)
-	// console.log(user)
-
-	// with USER/TASK relationship marked in task.owner.ref
-	const userPopulated = await task.populate('owner').execPopulate()
-	console.log(userPopulated)
-
-
-	// ------------ finding tasks for a particular user ---------------
-	const userTask = await User.findById('614378904ce05508b41d6c64')
-	console.log('before populatioan',userTask.tasks)
-
-	await userTask.populate('tasks').execPopulate()
-	console.log('after population', userTask.tasks)
-}
-
-//main()
