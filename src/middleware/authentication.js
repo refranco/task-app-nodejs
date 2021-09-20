@@ -5,7 +5,7 @@ const auth = async (req, res, next)=> {
 
 	try { // leo token the header, decodifico y compruebo que hay un usuario con ese token
 		const token = req.header('Authorization').replace('Bearer ','')
-		const decoded = jwt.verify(token, 'unafrasealeatoria.cualquiera')
+		const decoded = jwt.verify(token, process.env.JWT_SECRET)
 		const user = await User.findOne({ _id: decoded._id, 'tokens.token':token})
 		if (!user) {
 			throw new Error  //this will trigger the catch (e)

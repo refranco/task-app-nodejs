@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/authentication')
 const multer = require('multer')
+const sharp = require('sharp')
+const { sendWelcomeEmail, sendCancellationEmail } = require('../emails/account')
 
 // MODEL
 const User = require('../models/user');
@@ -14,7 +16,8 @@ router.post('/users',async (req,res)=> {// sending request to path /user via POS
 	
 	try {
 		const token = await user.generateAuthToken()
-		//await user.save()
+		sendWelcomeEmail(user.name, user.email)
+
 		res.status(201).send({ user,token })
 	} catch (e) {
 		res.status(400).send(e)
@@ -84,6 +87,7 @@ router.delete('/users/me', auth, async (req,res) =>{ //DELETE
 		// if (!user) {
 		// 	return res.status(404).send()
 		// }
+		sendCancellationEmail(req.user.name, req.user.email)
 		await req.user.remove()
 		console.log('Deleted user: '+req.user.name)
 		res.send(req.user)
@@ -150,7 +154,8 @@ const upload = multer({
 })
 // UPLOAD avatar
 router.post('/users/me/avatar', auth, upload.single('avatar'), async (req,res) =>{
-	req.user.avatar = req.file.buffer
+	const buffer = await sharp(req.file.buffer).png().resize({width:250,height:250}).toBuffer()
+	req.user.avatar = buffer
 	await req.user.save()
 	res.send('picture saved')
 }, (err,req,res,next) =>{
@@ -178,7 +183,7 @@ router.get('/users/:id/avatar', async (req,res) =>{
 			throw new Error
 		}
 
-		res.set('Content-Type','image/jpg')
+		res.set('Content-Type','image/png')
 		res.send(user.avatar)
 	} catch (e){
 		res.status(400).send()
