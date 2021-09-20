@@ -138,7 +138,6 @@ router.post('/users/logoutAll', auth, async(req,res) =>{
 
 // -------------------- agregando images --------------------------------
 const upload = multer({
-	dest: './images/avatar',
 	limits:{
 		fileSize:1000000
 		},
@@ -149,12 +148,41 @@ const upload = multer({
 		cb(undefined,true)
 	}
 })
-
-router.post('/users/me/avatar', auth, upload.single('avatar'), (req,res) =>{
-	res.send()
+// UPLOAD avatar
+router.post('/users/me/avatar', auth, upload.single('avatar'), async (req,res) =>{
+	req.user.avatar = req.file.buffer
+	await req.user.save()
+	res.send('picture saved')
 }, (err,req,res,next) =>{
 	res.status(400).send({error:err.message})
 })
 
+// DELETE avatar
+router.delete('/users/me/avatar', auth, async (req,res)=>{
+	try{
+		req.user.avatar = undefined
+		await req.user.save()
+		res.send('avatar deleted')
+	} catch (e) {
+		res.status(500).send()
+	}
+	
+})
+
+// SERVIN UP or FETCHING avatar
+router.get('/users/:id/avatar', async (req,res) =>{
+	try {
+		const user = await User.findById(req.params.id)
+
+		if (!user || !user.avatar) {
+			throw new Error
+		}
+
+		res.set('Content-Type','image/jpg')
+		res.send(user.avatar)
+	} catch (e){
+		res.status(400).send()
+	}
+})
 
 module.exports = router
