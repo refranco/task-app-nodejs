@@ -16,7 +16,7 @@ router.post('/users',async (req,res)=> {// sending request to path /user via POS
 	
 	try {
 		const token = await user.generateAuthToken()
-		sendWelcomeEmail(user.name, user.email)
+		await sendWelcomeEmail(user.name, user.email)
 
 		res.status(201).send({ user,token })
 	} catch (e) {
