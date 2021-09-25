@@ -15,7 +15,7 @@ router.post('/tasks', auth, async (req,res)=>{ //CREATE
 	try {
 		
 		await task.save()	
-		res.status(201).send('New task created\n'+task)
+		res.status(201).send(task)
 	} catch (e) {
 		res.status(400).send(e)
 	}

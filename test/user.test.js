@@ -1,29 +1,10 @@
 const request = require('supertest')
-const jwt = require('jsonwebtoken')
 const app = require('../src/app')
-const mongoose = require('mongoose')
-
 const User = require('../src/models/user')
+const {userOneId, userOne, setupDatabase, closeDatabase} = require('./fixtures/db')
 
-const userOneId = mongoose.Types.ObjectId()
+beforeEach(setupDatabase)
 
-const userOne = {
-	_id: userOneId,
-	name: 'User 1',
-	email:'user1.email@example.com',
-	password:'564What!',
-	tokens:[{
-		token: jwt.sign({_id:userOneId}, process.env.JWT_SECRET)
-	}]
-}
-beforeEach( async () => {
-	await User.deleteMany()
-	await new User(userOne).save()
-})
-
-// afterEach(async() =>{
-// 	await User.deleteMany()
-// })
 
 test('Should signup a new user', async () => {
 	const response = await request(app).post('/users').send({
@@ -106,6 +87,54 @@ test('Should signup a new user', async () => {
 	    .expect(400)
 })
 
-afterAll(() => { // quitar mensaje en amarillo sore working process...
-    mongoose.connection.close();
+
+// Funcionalidad para testear la carga/descarga de archivos
+test('should upload avatar image', async () =>{
+	await request(app)
+	.post('/users/me/avatar')
+	.set('Authorization',`Bearer ${userOne.tokens[0].token}`) //testeando autenticacion
+	.attach('avatar', 'test/fixtures/profile-pic.jpg')
+	.expect(200)
+	
+	//Advace Assertion: 
+	const user = await User.findById(userOneId)
+	expect(user.avatar).toEqual(expect.any(Buffer)) // chequeamos si la propiedad avatar guardada es del tipo binary data buffer
 })
+
+test('Not update for no authenticated user', async ()=>{
+	await request(app)
+		.patch('/users/me')
+		.send({
+			name: 'User updated',
+			email: 'secondnotemail@gmail.com'
+		})
+		.expect(400)
+})
+
+test('Not update invalid user fields', async ()=>{
+	await request(app)
+		.patch('/users/me')
+		.set('Authorization',`Bearer ${userOne.tokens[0].token}`)
+		.send({
+			location: 'atlanta'
+		})
+		.expect(400)
+})
+
+test('updates valid user fields', async () =>{
+	await request(app)
+		.patch('/users/me')
+		.set('Authorization',`Bearer ${userOne.tokens[0].token}`)
+		.send({
+			name: 'User updated',
+			email: 'secondnotemail@gmail.com'
+		})
+		.expect(200)
+	
+	const user = await User.findById(userOneId)
+	expect(user.name).toEqual('User updated')
+	expect(user.email).toEqual('secondnotemail@gmail.com')
+	
+
+})
+afterAll(closeDatabase) // quitar mensaje en amarillo sobre working process...
