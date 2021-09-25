@@ -82,7 +82,7 @@ userSchema.pre('remove', async function (next) {
 	try {
 		const user = this
 		const tasks = await Task.deleteMany({owner: user._id})
-		console.log(tasks)
+		//console.log(tasks)
 		next()
 	} catch (e) {
 		console.log('could not find tasks')
@@ -116,7 +116,6 @@ userSchema.methods.toJSON = function () {
 	delete userObject['tokens']
 	delete userObject['avatar']
 
-	console.log(userObject)
 	return userObject
 }
 

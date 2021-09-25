@@ -72,7 +72,7 @@ router.patch('/users/me', auth, async (req,res) =>{// UPDATE
 		await user.save()
 		
 		
-		console.log('user '+user.name+' updated')
+		//console.log('user '+user.name+' updated')
 		res.send(user)
 	} catch (e) {
 		res.status(400).send(e)
@@ -89,7 +89,7 @@ router.delete('/users/me', auth, async (req,res) =>{ //DELETE
 		// }
 		sendCancellationEmail(req.user.name, req.user.email)
 		await req.user.remove()
-		console.log('Deleted user: '+req.user.name)
+		//console.log('Deleted user: '+req.user.name)
 		res.send(req.user)
 	} catch (e) {
 		res.status(500).send()

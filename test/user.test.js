@@ -26,19 +26,43 @@ beforeEach( async () => {
 // })
 
 test('Should signup a new user', async () => {
-	await request(app).post('/users').send({
+	const response = await request(app).post('/users').send({
 	    name: 'Esteban',
-	    email: 'estebanfrancobedoya@gmail.com',
+	    email: 'noemaila@gmail.com',
 	    password: 'MyPass777!'
 	}).expect(201)
+
+	// Advance Assert: that de database was changed correctly
+	const user = await User.findById(response.body.user._id)
+	expect(user).not.toBeNull()
+
+	//Advance Assert:Assertions about the response
+	expect(response.body).toMatchObject({
+		user:{
+			name: 'Esteban',
+	    		email: 'noemaila@gmail.com',
+		},
+		token: user.tokens[0].token
+	
+	})
+
+	//Advance Assert: expect password not stored in plain text
+	expect(user.password).not.toBe('MyPass777!')
   })
 
 
   test('Existing user should log in', async () =>{
-	  await request(app).post('/users/login').send({
+	 const response = await request(app).post('/users/login').send({
 		email:userOne.email,
 		password:userOne.password
 	  }).expect(200)
+	  
+	  //Advance Asser: expect the creation of a second token
+	  const loggedUser = await User.findById(userOneId)
+	//   const loggedUser = await User.find({_id:userOneId})
+	  expect(loggedUser).not.toBeNull()
+	  expect(response.body.token).toBe(loggedUser.tokens[1].token)
+
   })
 
   test('should fail for login', async () =>{
@@ -69,6 +93,10 @@ test('Should signup a new user', async () => {
 		.set('Authorization',`Bearer ${userOne.tokens[0].token}`)
 		.send()
 		.expect(200)
+
+		//Advace assertion: Validate user is removed
+		const user = await User.findById(userOneId)
+		expect(user).toBeNull()
   })
 
   test('fail delete account for unauthenticated user', async () =>{
@@ -78,6 +106,6 @@ test('Should signup a new user', async () => {
 	    .expect(400)
 })
 
-// afterAll(() => {
-//     mongoose.connection.close();
-// })
+afterAll(() => { // quitar mensaje en amarillo sore working process...
+    mongoose.connection.close();
+})
