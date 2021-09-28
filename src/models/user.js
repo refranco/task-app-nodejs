@@ -14,7 +14,7 @@ const userSchema= mongoose.Schema({
 	email: {
 		type:String,
 		required: true,
-		unique: true, // the user is has to be unique in all database
+		unique: true, // the user has to be unique in all database
 		trim : true,
 		lowercase: true,
 		validate(value){
